@@ -1,0 +1,10 @@
+{
+    "DBHost": "localhost",
+    "DBPort": 5432,
+    "DBUser": "postgres",
+    "DBPassword": "",
+    "DBName": "library",
+    "ServiceName":"library_service",
+    "ServicePort":8080,
+    "ObserverPort":9080
+}

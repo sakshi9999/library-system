@@ -2,10 +2,19 @@ package handler
 
 import (
 	"library-system/models"
+	"library-system/stats"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+)
+
+const (
+	AddBookAPI    = "ADD_BOOK"
+	ListBookAPI   = "LIST_BOOK_API"
+	ReturnBookAPI = "RETURN_BOOK_API"
+	BorrowBookAPI = "BORROW_BOOK_API"
 )
 
 type CommandHandler struct {
@@ -17,6 +26,10 @@ func NewCommandHandler(db *gorm.DB) CommandHandler {
 }
 
 func (d *CommandHandler) AddBook(c *gin.Context) {
+	apiStartTime := time.Now()
+	stats.AddBookApiCounter.Inc()
+	defer stats.ApiElapsedTime.WithLabelValues(AddBookAPI).Set(float64(time.Since(apiStartTime).Milliseconds()))
+
 	var book models.Book
 	if err := c.ShouldBindJSON(&book); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -30,6 +43,10 @@ func (d *CommandHandler) AddBook(c *gin.Context) {
 
 // ListBooks - GET /books
 func (d *CommandHandler) ListBooks(c *gin.Context) {
+	apiStartTime := time.Now()
+	stats.GetBookApiCounter.Inc()
+	defer stats.ApiElapsedTime.WithLabelValues(ListBookAPI).Set(float64(time.Since(apiStartTime).Milliseconds()))
+
 	var books []models.Book
 	d.Db.Find(&books)
 	c.JSON(http.StatusOK, books)
@@ -37,6 +54,10 @@ func (d *CommandHandler) ListBooks(c *gin.Context) {
 
 // BorrowBook - POST /books/:id/borrow
 func (d *CommandHandler) BorrowBook(c *gin.Context) {
+	apiStartTime := time.Now()
+	stats.BorrowBookApiCounter.Inc()
+	defer stats.ApiElapsedTime.WithLabelValues(BorrowBookAPI).Set(float64(time.Since(apiStartTime).Milliseconds()))
+
 	var book models.Book
 	if err := d.Db.First(&book, c.Param("id")).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Book not found"})
@@ -66,6 +87,10 @@ func (d *CommandHandler) BorrowBook(c *gin.Context) {
 
 // ReturnBook - POST /books/:id/return
 func (d *CommandHandler) ReturnBook(c *gin.Context) {
+	apiStartTime := time.Now()
+	stats.ReturnBookApiCounter.Inc()
+	defer stats.ApiElapsedTime.WithLabelValues(ReturnBookAPI).Set(float64(time.Since(apiStartTime).Milliseconds()))
+
 	var book models.Book
 	if err := d.Db.First(&book, c.Param("id")).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Book not found"})
